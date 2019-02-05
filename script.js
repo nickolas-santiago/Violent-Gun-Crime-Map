@@ -7,12 +7,14 @@ var projection = d3.geoAlbersUsa()
     .scale([800]); //---scale things down so see entire US
 var path = d3.geoPath() // path generator that will convert GeoJSON to SVG paths
     .projection(projection); // tell path generator to use albersUsa projection
-
+var incident_list_holder;
+    
 var chosen_state = "";
 var first_year = 2014;
 var last_year = 2017;
 var current_month = 11;
 var current_year = 2015;
+var current_incident_list_page = 2;
 var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" ]
 
 $(document).ready(function()
@@ -25,6 +27,10 @@ $(document).ready(function()
             .attr("width", svg_width)
             .attr("height", svg_height);
         renderMap(json);
+        incident_list_holder = d3.select("body")
+            .append("div")
+            .attr("id", "incident_list_holder");
+            
         d3.csv("gun-violence-data_01-2013_03-2018.csv").then(function(data)
         {
             var timeline_data_set = [];
@@ -86,9 +92,144 @@ $(document).ready(function()
             }
             renderTimeline(timeline_data_set, data);
             renderIncidentLocations(data);
+            renderIncidentList(data);
         });
     });
 });
+
+function renderIncidentList(data)
+{   
+    var items_per_list = 500;
+    var incidents_for_current_month_and_year = data.filter(function(n)
+    {
+        var date_ = n.date.split("-");
+        var projection_;
+        if(n.latitude && n.longitude)
+        {
+            projection_ = (projection([n.longitude, n.latitude]) == null);
+        }
+        return ((date_[0] == current_year) && (date_[1] == current_month) && (projection_ == false));
+    });
+    var current_visible_incident_list = incidents_for_current_month_and_year.filter(function(n, i)
+    {
+        return ((i < (items_per_list * current_incident_list_page)) && (i >= (items_per_list * (current_incident_list_page - 1))));
+    });
+    var incident_list_holder_html = "";
+    
+    for(var incident = 0; incident < current_visible_incident_list.length; incident++)
+    {
+        var participants = [];
+        var data_types = [ ["participant_name", "name"], ["participant_age", "age"], ["participant_age_group", "age_group"], ["participant_gender", "gender"], ["participant_type", "type"], ["participant_status", "status"]];
+        var generate_list_item = function(participant_data_, type_)
+        {
+            var participant_data_split = current_visible_incident_list[incident][participant_data_].split("||");
+            if(participant_data_split != "")
+            {
+                for(var participant = 0; participant < participant_data_split.length; participant++)
+                {
+                    if(participants.length == 0)
+                    {
+                        var participant_ = {};
+                        participant_.index = participant_data_split[participant].split("::")[0];
+                        participant_[type_] = participant_data_split[participant].split("::")[1];
+                        participants.push(participant_);
+                    }
+                    else
+                    {
+                        var participant_exists = participants.findIndex(function(p)
+                        {
+                            return p.index == participant_data_split[participant].split("::")[0];
+                        });
+                        if(participant_exists < 0)
+                        {
+                            var participant_ = {};
+                            participant_.index = participant_data_split[participant].split("::")[0];
+                            participant_[type_] = participant_data_split[participant].split("::")[1];
+                            participants.push(participant_);
+                        }
+                        else
+                        {
+                            participants[participant_exists][type_] = participant_data_split[participant].split("::")[1];
+                        }
+                    }
+                }
+            }
+        }
+        data_types.forEach(function(n)
+        {
+            generate_list_item(n[0], n[1]);
+        });
+        
+        var incident_list_item_html = "";
+        incident_list_item_html += "<div class='incident_list_item'>";
+        incident_list_item_html += "<p>Date: " + current_visible_incident_list[incident].date + "</p>";
+        incident_list_item_html += "<p>" + current_visible_incident_list[incident].city_or_county + ", " + current_visible_incident_list[incident].state + "</p>";
+        if(current_visible_incident_list[incident].incident_characteristics)
+        {
+            incident_list_item_html += "<p>Description: ";
+            var characteristics = current_visible_incident_list[incident].incident_characteristics.split("||");
+            for(var characteristic = 0; characteristic < characteristics.length; characteristic++)
+            {
+                incident_list_item_html += characteristics[characteristic];
+                if(characteristic < (characteristics.length - 1))
+                {
+                    incident_list_item_html += ", ";
+                }
+            }
+            incident_list_item_html += "</p>";
+        }
+        participants.forEach(function(n)
+        {
+            incident_list_item_html += "<div class='participant'>";
+            if(n.name)
+            {
+                incident_list_item_html += "<p>" + n.name + "</p>";
+            }
+            else
+            {
+                incident_list_item_html += "<p>Unnamed";
+                if(n.type)
+                {
+                    incident_list_item_html += " " + n.type;
+                }
+                incident_list_item_html += "</p>";
+            }
+            incident_list_item_html += "<ul>";
+            if(n.age)
+            {
+                incident_list_item_html += "<li>" + n.age + "</li>";
+            }
+            else
+            {
+                if(n.age_group)
+                {
+                    incident_list_item_html += "<li>" + n.age_group + "</li>";
+                }
+            }
+            incident_list_item_html += "<li>" + n.gender + "</li>";
+            if(n.name)
+            {
+                incident_list_item_html += "<li>" + n.type + "</li>";
+            }
+            incident_list_item_html += "<li>" + n.status + "</li>";
+            incident_list_item_html += "</ul>";
+            incident_list_item_html += "</div>";
+        });
+        if(current_visible_incident_list[incident].source_url)
+        {
+            var site = current_visible_incident_list[incident].source_url.split("//")[1];
+            if(site.includes("www."))
+            {
+                site = site.split("www.")[1];
+            }
+            site = site.split("/")[0];
+            incident_list_item_html += "<p>Source: <a href='" + current_visible_incident_list[incident].source_url + "'>" + site +"</a></p>";
+        }
+        incident_list_item_html += "</div>";
+        incident_list_holder_html += incident_list_item_html;
+    }
+    $("#incident_list_holder").html(incident_list_holder_html);
+}
 
 function renderMap(json)
 {
@@ -158,7 +299,6 @@ function renderIncidentLocations(violence_data)
             projection_ = (projection([n.longitude, n.latitude]) == null);
         }
         return ((date_[0] == current_year) && (date_[1] == current_month) && (projection_ == false));
-    
     });
     d3.selectAll("circle").remove();
     var circle = svg.selectAll("circle")
