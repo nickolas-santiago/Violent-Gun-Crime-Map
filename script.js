@@ -12,9 +12,10 @@ var incident_list_holder;
 var chosen_state = "";
 var first_year = 2014;
 var last_year = 2017;
-var current_month = 11;
-var current_year = 2015;
-var current_incident_list_page = 2;
+var current_month = 1;
+var current_year = 2014;
+var current_incident_list_page = 1;
+var current_incident_max_page = 0;
 var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" ]
 
 $(document).ready(function()
@@ -26,11 +27,15 @@ $(document).ready(function()
             .append("svg")
             .attr("width", svg_width)
             .attr("height", svg_height);
-        renderMap(json);
+        //renderMap(json);
         incident_list_holder = d3.select("body")
             .append("div")
             .attr("id", "incident_list_holder");
-            
+        incident_list_holder.append("div")
+            .attr("id", "incident_list_holder_top");
+        incident_list_holder.append("div")
+            .attr("id", "incident_list_items");
+
         d3.csv("gun-violence-data_01-2013_03-2018.csv").then(function(data)
         {
             var timeline_data_set = [];
@@ -90,15 +95,39 @@ $(document).ready(function()
                     }
                 }
             }
+            renderMap(json, data);
             renderTimeline(timeline_data_set, data);
             renderIncidentLocations(data);
             renderIncidentList(data);
+            
+            var incident_list_holder_top = "";
+            incident_list_holder_top += "<p>Page ";
+            incident_list_holder_top += "<input id='current_incident_list_page_input' type='number' name='quantity' value=" + current_incident_list_page + ">";
+            incident_list_holder_top += " of <span id='ff'>" + current_incident_max_page + "</span></p>";
+            
+            $("#incident_list_holder_top").html(incident_list_holder_top);
+            $("#current_incident_list_page_input").on("change", function()
+            {
+                if($(this).val() > 0 && $(this).val() <= current_incident_max_page)
+                {
+                    current_incident_list_page = $(this).val();
+                    renderIncidentList(data);
+                }
+                else if($(this).val() <= 0)
+                {
+                    $(this).val(1);
+                }
+                else if($(this).val() > current_incident_max_page)
+                {
+                    $(this).val(current_incident_max_page);
+                }
+            });
         });
     });
 });
 
 function renderIncidentList(data)
-{   
+{
     var items_per_list = 500;
     var incidents_for_current_month_and_year = data.filter(function(n)
     {
@@ -108,14 +137,21 @@ function renderIncidentList(data)
         {
             projection_ = (projection([n.longitude, n.latitude]) == null);
         }
+        if(chosen_state != "")
+        {
+            var state_ = n.state.split(" ").join("");
+            return ((date_[0] == current_year) && (date_[1] == current_month) && (projection_ == false) && (state_ == chosen_state));
+        }
         return ((date_[0] == current_year) && (date_[1] == current_month) && (projection_ == false));
     });
     var current_visible_incident_list = incidents_for_current_month_and_year.filter(function(n, i)
     {
         return ((i < (items_per_list * current_incident_list_page)) && (i >= (items_per_list * (current_incident_list_page - 1))));
     });
-    var incident_list_holder_html = "";
     
+    current_incident_max_page = Math.ceil(incidents_for_current_month_and_year.length/items_per_list);
+    
+    var incident_list_holder_html = "";
     for(var incident = 0; incident < current_visible_incident_list.length; incident++)
     {
         var participants = [];
@@ -217,21 +253,24 @@ function renderIncidentList(data)
         });
         if(current_visible_incident_list[incident].source_url)
         {
-            var site = current_visible_incident_list[incident].source_url.split("//")[1];
-            if(site.includes("www."))
+            if(current_visible_incident_list[incident].source_url.split("//")[1])
             {
-                site = site.split("www.")[1];
+                var site = current_visible_incident_list[incident].source_url.split("//")[1];
+                if(site.includes("www."))
+                {
+                    site = site.split("www.")[1];
+                }
+                site = site.split("/")[0];
+                incident_list_item_html += "<p>Source: <a href='" + current_visible_incident_list[incident].source_url + "'>" + site +"</a></p>";
             }
-            site = site.split("/")[0];
-            incident_list_item_html += "<p>Source: <a href='" + current_visible_incident_list[incident].source_url + "'>" + site +"</a></p>";
         }
         incident_list_item_html += "</div>";
         incident_list_holder_html += incident_list_item_html;
     }
-    $("#incident_list_holder").html(incident_list_holder_html);
+    $("#incident_list_items").html(incident_list_holder_html);
 }
 
-function renderMap(json)
+function renderMap(json, violence_data)
 {
     var default_color = "#fff";
     var hover_color = "#A8D156";
@@ -285,6 +324,10 @@ function renderMap(json)
                     d3.select("#" + prior_state).style("fill", default_color);
                 }
             }
+            current_incident_list_page = 1;
+            $("#current_incident_list_page_input").val(1);
+            renderIncidentList(violence_data);
+            $("#ff").html(current_incident_max_page);
         });
 }
 
@@ -468,7 +511,11 @@ function renderTimeline(time_data, violence_data)
                 current_month = (Math.floor(i%12) + 1);
                 this.style.fill = chosen_segment_color;
             }
+            current_incident_list_page = 1;
+            $("#current_incident_list_page_input").val(1);
             renderIncidentLocations(violence_data);
+            renderIncidentList(violence_data);
+            $("#ff").html(current_incident_max_page);
         });
     renderLineFuction("total_incidents", "black", 1.5, timeline, time_data, xscale, yscale, padding, timeline_section_width);
     renderLineFuction("total_killed", "#ff0000", 1, timeline, time_data, xscale, yscale, padding, timeline_section_width);
