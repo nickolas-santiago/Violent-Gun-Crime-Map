@@ -1,17 +1,19 @@
 "use script";
 var svg;
-var svg_width = 700;
-var svg_height = 600;
+var svg_width = 850;
+var svg_height = 730;
 var projection = d3.geoAlbersUsa()
-    .translate([(svg_width/2), (svg_height/2)]) //---translate to center of svg
-    .scale([800]); //---scale things down so see entire US
+    //.translate([(svg_width/2), (svg_height/2)]) //---translate to center of svg
+    .translate([450, 260]) //---translate to center of svg
+    .scale([1000]); //---scale things down so see entire US
 var path = d3.geoPath() // path generator that will convert GeoJSON to SVG paths
     .projection(projection); // tell path generator to use albersUsa projection
 var incident_list_holder;
-    
+
 var chosen_state = "";
 var first_year = 2014;
 var last_year = 2017;
+var total_years = ((last_year - first_year) + 1); //---has to be inclusive
 var current_month = 1;
 var current_year = 2014;
 var current_incident_list_page = 1;
@@ -28,6 +30,7 @@ $(document).ready(function()
             .attr("width", svg_width)
             .attr("height", svg_height);
         //renderMap(json);
+        
         incident_list_holder = d3.select("body")
             .append("div")
             .attr("id", "incident_list_holder");
@@ -123,6 +126,7 @@ $(document).ready(function()
                 }
             });
         });
+        
     });
 });
 
@@ -361,23 +365,23 @@ function renderIncidentLocations(violence_data)
         {
             return projection([d.longitude, d.latitude])[1];
         })
-        .attr("r", 3)
+        .attr("r", 2.5)
         .style("fill", "red");
 }
 
 function renderTimeline(time_data, violence_data)
 {
     var timeline_width = 650;
-    var timeline_height = 100;
-    var timeline_xpos = 0;
-    var timeline_ypos = 0;
-    var timeline_section_width = (timeline_width/(12*4));
-    var padding = 35;
-    
+    var timeline_height = 130;
+    var timeline_xpos = ((svg_width/2) - (timeline_width/2));
+    var timeline_ypos = (svg_height - timeline_height - 65);
+    var timeline_section_width = (timeline_width/(12 * total_years));
+
     var default_color_a = "#fff";
     var default_color_b = "#efefef";
     var hover_color = "#c1c1c1";
     var chosen_segment_color = "#aaaaaa";
+    var yscale_divider_color = "#d1d1d1";
 
     var time_data_range = [];
     time_data_range.push(d3.min(time_data, function(n)
@@ -414,9 +418,9 @@ function renderTimeline(time_data, violence_data)
     });
     
     var yscale = d3.scaleLinear()
-        .domain([0, max_time_data_range])
-        .range([100, 0]);
-    var yaxis = d3.axisLeft(yscale).ticks(4);
+        .domain([0, 6000])
+        .range([timeline_height, 0]);
+    var yaxis = d3.axisLeft(yscale).ticks(5);
     var xscale = d3.scaleLinear()
         .domain([0, (time_data.length - 1)])
         .range([0, timeline_width]);
@@ -427,17 +431,16 @@ function renderTimeline(time_data, violence_data)
             var month_ = Math.floor(d%12);
             return monthNames[month_];
         });
-    
+
     var timeline = svg.append("g")
-        .attr("x", timeline_xpos)
-        .attr("y", timeline_ypos);
+        .attr("x", timeline_xpos);
     timeline.append("g")
         .attr("id","x-axis")
-        .attr("transform","translate(" + (padding + (timeline_section_width/2)) + "," + (20 +timeline_height)  +")")
+        .attr("transform","translate(" + (timeline_xpos + (timeline_section_width/2)) + "," + (timeline_ypos +timeline_height)  +")")
         .call(xaxis);
     timeline.append("g")
         .attr("id","y-axis")
-        .attr("transform","translate(" + padding + "," + (20)  +")")
+        .attr("transform","translate(" + (timeline_xpos - 1) + "," + timeline_ypos  +")")
         .call(yaxis);
     var timeline_section = timeline.selectAll("rect")
         .data(time_data)
@@ -450,9 +453,9 @@ function renderTimeline(time_data, violence_data)
         })
         .attr("x", function(d, i)
         {
-            return (padding + xscale(i));
+            return (timeline_xpos + xscale(i));
         })
-        .attr("y", 20)
+        .attr("y", timeline_ypos)
         .attr("width", timeline_section_width)
         .attr("height", timeline_height)
         .attr("fill", function(d, i)
@@ -463,14 +466,7 @@ function renderTimeline(time_data, violence_data)
             }
             else
             {
-                if((Math.floor(i/12)%2) == 0)
-                {
-                    return default_color_a;
-                }
-                else
-                {
-                    return default_color_b;
-                }
+                return default_color_a;
             }
         })
         .on("mouseover", function(d, i)
@@ -484,27 +480,13 @@ function renderTimeline(time_data, violence_data)
         {
             if(((Math.floor(i/12) + first_year) != current_year) || ((Math.floor(i%12) + 1) != current_month))
             {
-                if((Math.floor(i/12)%2) == 0)
-                {
-                    this.style.fill = default_color_a;
-                }
-                else
-                {
-                    this.style.fill = default_color_b;
-                }
+                this.style.fill = default_color_a;
             }
         })
         .on("click", function(d, i)
         {
             var old_current_date = ((current_year - first_year) * 12) + (current_month - 1);
-            if(current_year%2 == 0)
-            {
-                d3.select(("#timeline_section_" + old_current_date)).style("fill", default_color_a);
-            }
-            else
-            {
-                d3.select(("#timeline_section_" + old_current_date)).style("fill", default_color_b);
-            }
+            d3.select(("#timeline_section_" + old_current_date)).style("fill", default_color_a);
             if(((Math.floor(i/12) + first_year) != current_year) || ((Math.floor(i%12) + 1) != current_month))
             {
                 current_year = (first_year + Math.floor(i/12));
@@ -517,27 +499,89 @@ function renderTimeline(time_data, violence_data)
             renderIncidentList(violence_data);
             $("#ff").html(current_incident_max_page);
         });
-    renderLineFuction("total_incidents", "black", 1.5, timeline, time_data, xscale, yscale, padding, timeline_section_width);
-    renderLineFuction("total_killed", "#ff0000", 1, timeline, time_data, xscale, yscale, padding, timeline_section_width);
-    renderLineFuction("total_injured", "#ffa500", 1, timeline, time_data, xscale, yscale, padding, timeline_section_width);
-}
-function renderLineFuction(line_data, line_color, line_width, timeline, time_data, xscale, yscale, padding, timeline_section_width)
-{
-    var line = d3.line()
-        .x(function(d, i)
+
+    for(var l = 0; l < 6; l++)
+    {
+        var yaxis_divider_xpoints = [0, (timeline_width + timeline_section_width)];
+        var yaxis_divider_line = d3.line()
+            .x(function(d)
+            {
+                return d;
+            })
+            .y(function()
+            {
+                return yscale((l * 1000) + 1000);
+            });
+        timeline.append("path")
+            .datum(yaxis_divider_xpoints)
+            .attr("class", "line")
+            .attr("d", yaxis_divider_line)
+            .attr("transform","translate(" + timeline_xpos  + "," +  timeline_ypos +")")
+            .style("fill","none")
+            .style("stroke", yscale_divider_color)
+            .style("stroke-width", 0.5);
+    }
+
+    for(var year_divider = 0; year_divider < total_years; year_divider++)
+    {
+        timeline.append("text")
+            .text(first_year + year_divider)
+            .attr("x", function()
+            {
+                return (xscale((12 * year_divider)) + (timeline_section_width * 6));
+            })
+            .attr("y", function()
+            {
+                return (timeline_height + 36.5);
+            })
+            .attr("transform","translate(" + timeline_xpos  + "," +  timeline_ypos +")")
+            .style("text-anchor", "middle")
+            .style("font-size", "12px");
+        if(year_divider != 0)
         {
-            return xscale(i);
-        })
-        .y(function(d,i)
-        {
-            return yscale(d[line_data]);
-        });
-    timeline.append("path")
-        .datum(time_data)
-        .attr("class", "line")
-        .attr("d", line)
-        .attr("transform","translate(" + (padding + (timeline_section_width/2)) + "," + (20)  +")")
-        .style("fill","none")
-        .style("stroke", line_color)
-        .style("stroke-width", line_width);
+            var year_divider_ypoints = [0, timeline_height];
+            var year_divider_line = d3.line()
+                .x(function()
+                {
+                    return xscale(12 * year_divider);
+                })
+                .y(function(d)
+                {
+                    return d;
+                });
+            timeline.append("path")
+                .datum(year_divider_ypoints)
+                .attr("class", "line")
+                .attr("d", year_divider_line)
+                .attr("transform","translate(" + timeline_xpos  + "," +  timeline_ypos +")")
+                .style("fill","black")
+                .style("stroke", "black")
+                .style("stroke-width", 1);
+        }
+    }
+
+    var renderLineFuction = function(line_data, line_color, line_width)
+    {
+        var line = d3.line()
+            .x(function(d, i)
+            {
+                return xscale(i);
+            })
+            .y(function(d,i)
+            {
+                //return yscale(d[line_data]) + 2.5;
+                return yscale(d[line_data]);
+            });
+        timeline.append("path")
+            .datum(time_data)
+            .attr("class", "line")
+            .attr("d", line)
+            .attr("transform","translate(" + (timeline_xpos + (timeline_section_width/2)) + "," +  timeline_ypos +")")
+            .style("fill","none")
+            .style("stroke", line_color)
+            .style("stroke-width", line_width);
+    }
+    renderLineFuction("total_incidents", "black", 1.5);
+    renderLineFuction("total_killed", "#ff0000", 1);
+    renderLineFuction("total_injured", "#ffa500", 1);
 }
