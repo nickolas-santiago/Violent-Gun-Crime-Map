@@ -25,13 +25,13 @@ $(document).ready(function()
     console.log("yerrr world");
     d3.json("us-states.json").then(function(json)
     {
-        svg = d3.select("body")
+        svg = d3.select("#app")
             .append("svg")
             .attr("width", svg_width)
             .attr("height", svg_height);
         //renderMap(json);
         
-        incident_list_holder = d3.select("body")
+        incident_list_holder = d3.select("#app")
             .append("div")
             .attr("id", "incident_list_holder");
         incident_list_holder.append("div")
@@ -126,7 +126,6 @@ $(document).ready(function()
                 }
             });
         });
-        
     });
 });
 
@@ -569,7 +568,6 @@ function renderTimeline(time_data, violence_data)
             })
             .y(function(d,i)
             {
-                //return yscale(d[line_data]) + 2.5;
                 return yscale(d[line_data]);
             });
         timeline.append("path")

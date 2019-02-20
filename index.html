@@ -9,11 +9,19 @@
     <style type="text/css">
         body
         {
+            margin: 0;
+            text-align: center;
             background-color: #e3e3e3;
         }
+        #app
+        {
+            display: inline-flex;
+        }
+        
         svg
         {
             background-color: white;
+            box-shadow: -5px 10px 8px #888888;
         }
         
         #loading_screen
@@ -27,20 +35,42 @@
         #incident_list_holder
         {
             width: 400px;
-            height: 500px;
-            float: left;
-            padding: 15px;
-            background-color: pink;
-            overflow-y: scroll;
-            overflow-x: hidden;
+            height: 730px;
+            margin-left: 10px;
+            padding: 0 10px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 5px 10px 8px #888888;
         }
         
         #incident_list_holder_top
         {
             width: 100%;
-            height: 150px;
-            background-color: aliceblue;
+            margin: 0;
         }
+        
+        #incident_list_holder_top p
+        {
+            margin: 15px 0 10px 0;
+        }
+        #current_incident_list_page_input
+        {
+            width: 2em;
+        }
+        
+        
+        #incident_list_items
+        {
+            padding: 0 10px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            text-align: left;
+            background-color: #888888;
+        }
+        
+        
         
         .incident_point
         {
