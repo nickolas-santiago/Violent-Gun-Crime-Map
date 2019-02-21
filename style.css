@@ -5,6 +5,11 @@ body
     text-align: center;
     background-color: #e3e3e3;
 }
+#title
+{
+    width: 1270px;
+    margin: 30px auto 20px auto;
+}
 #app
 {
     display: inline-flex;
