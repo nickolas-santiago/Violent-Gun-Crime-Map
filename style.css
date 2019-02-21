@@ -1,0 +1,104 @@
+body
+{
+    margin: 0;
+    font-family: sans-serif;
+    text-align: center;
+    background-color: #e3e3e3;
+}
+#app
+{
+    display: inline-flex;
+}
+
+/*Style for SVG*/
+svg
+{
+    background-color: white;
+    box-shadow: -5px 10px 8px #888888;
+}
+.incident_point
+{
+    pointer-events: none;
+}
+.state, .timeline_section
+{
+    cursor: pointer;
+}
+.line
+{
+    pointer-events: none;
+}
+
+/*Style for Incident List*/
+#incident_list_holder
+{
+    width: 400px;
+    height: 760px;
+    margin-left: 10px;
+    padding: 0 5px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 5px 10px 8px #888888;
+}
+#incident_list_holder_top
+{
+    width: 100%;
+    margin: 0;
+}
+#incident_list_holder_top p
+{
+    margin: 15px 0 10px 0;
+}
+#current_incident_list_page_input
+{
+    width: 3em;
+    border: solid 2px rgba(87, 87, 87, 0.2);
+}
+#incident_list_items
+{
+    padding: 0 10px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    text-align: left;
+    background-color: #c1c1c1;
+    border: solid 2px rgba(87, 87, 87, 0.2);
+}
+.incident_list_item
+{
+    padding: 8.5px;
+    background-color: white;
+    margin: 5px 0 15px 0;
+    box-shadow: 5px 10px 8px #575757;
+}
+.incident_list_item_info
+{
+    margin: 4px 0;
+}
+.incident_list_item ul
+{
+    margin: 0;
+}
+.participant
+{
+    margin: 10px 0 0 0;
+}
+.participant p
+{
+    margin: 0;
+}
+.incident_list_item_source
+{
+    margin: 20px 0 0 0;
+}
+#incident_list_counter
+{
+    width: 100%;
+    margin: 0;
+    font-size: 12px;
+}
+#incident_list_counter p
+{
+    margin: 10px 0 10px 0;
+}
