@@ -10,6 +10,7 @@
         body
         {
             margin: 0;
+            font-family: sans-serif;
             text-align: center;
             background-color: #e3e3e3;
         }
@@ -37,7 +38,7 @@
             width: 400px;
             height: 730px;
             margin-left: 10px;
-            padding: 0 10px;
+            padding: 0 5px;
             background-color: white;
             display: flex;
             flex-direction: column;
@@ -51,14 +52,28 @@
             margin: 0;
         }
         
+        
         #incident_list_holder_top p
         {
             margin: 15px 0 10px 0;
         }
         #current_incident_list_page_input
         {
-            width: 2em;
+            width: 3em;
+            border: solid 2px rgba(87, 87, 87, 0.2);
         }
+        
+        #incident_list_counter
+        {
+            width: 100%;
+            margin: 0;
+            font-size: 12px;
+        }
+        #incident_list_counter p
+        {
+            margin: 10px 0 10px 0;
+        }
+        
         
         
         #incident_list_items
@@ -67,7 +82,8 @@
             overflow-y: scroll;
             overflow-x: hidden;
             text-align: left;
-            background-color: #888888;
+            background-color: #c1c1c1;
+            border: solid 2px rgba(87, 87, 87, 0.2);
         }
         
         
@@ -80,17 +96,35 @@
         
         .incident_list_item
         {
+            padding: 8.5px;
             background-color: white;
-            margin-top: 15px;
+            margin: 5px 0 15px 0;
+            
+            box-shadow: 5px 10px 8px #575757;
+            
+            
         }
-        .incident_list_item p
+        .incident_list_item_info
+        {
+            margin: 4px 0;
+        }
+        .incident_list_item ul
         {
             margin: 0;
         }
         .participant
         {
-            margin-top: 10px;
+            margin: 10px 0 0 0;
         }
+        .participant p
+        {
+            margin: 0;
+        }
+        .incident_list_item_source
+        {
+            margin: 20px 0 0 0;
+        }
+        
         
         .state
         {
@@ -103,6 +137,7 @@
     </style>
 </head>
 <body>
+    <h1 id="title">Violent Gun Crimes in the US</h1>
     <div id="app"></div>
 </body>
 </html>

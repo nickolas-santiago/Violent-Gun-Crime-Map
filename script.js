@@ -3,7 +3,6 @@ var svg;
 var svg_width = 850;
 var svg_height = 730;
 var projection = d3.geoAlbersUsa()
-    //.translate([(svg_width/2), (svg_height/2)]) //---translate to center of svg
     .translate([450, 260]) //---translate to center of svg
     .scale([1000]); //---scale things down so see entire US
 var path = d3.geoPath() // path generator that will convert GeoJSON to SVG paths
@@ -38,6 +37,8 @@ $(document).ready(function()
             .attr("id", "incident_list_holder_top");
         incident_list_holder.append("div")
             .attr("id", "incident_list_items");
+        incident_list_holder.append("div")
+            .attr("id", "incident_list_counter");
 
         d3.csv("gun-violence-data_01-2013_03-2018.csv").then(function(data)
         {
@@ -200,12 +201,14 @@ function renderIncidentList(data)
         });
         
         var incident_list_item_html = "";
+        var date_split = current_visible_incident_list[incident].date.split("-");
+        var date_ = monthNames[(Number(date_split[1]) - 1)] + " " + date_split[2] + ", " + date_split[0];
         incident_list_item_html += "<div class='incident_list_item'>";
-        incident_list_item_html += "<p>Date: " + current_visible_incident_list[incident].date + "</p>";
-        incident_list_item_html += "<p>" + current_visible_incident_list[incident].city_or_county + ", " + current_visible_incident_list[incident].state + "</p>";
+        incident_list_item_html += "<p class='incident_list_item_info'>" + date_ + "</p>";
+        incident_list_item_html += "<p class='incident_list_item_info'>" + current_visible_incident_list[incident].city_or_county + ", " + current_visible_incident_list[incident].state + "</p>";
         if(current_visible_incident_list[incident].incident_characteristics)
         {
-            incident_list_item_html += "<p>Description: ";
+            incident_list_item_html += "<p class='incident_list_item_info'>Description: ";
             var characteristics = current_visible_incident_list[incident].incident_characteristics.split("||");
             for(var characteristic = 0; characteristic < characteristics.length; characteristic++)
             {
@@ -245,12 +248,18 @@ function renderIncidentList(data)
                     incident_list_item_html += "<li>" + n.age_group + "</li>";
                 }
             }
-            incident_list_item_html += "<li>" + n.gender + "</li>";
+            if(n.gender)
+            {
+                incident_list_item_html += "<li>" + n.gender + "</li>";
+            }
             if(n.name)
             {
                 incident_list_item_html += "<li>" + n.type + "</li>";
             }
-            incident_list_item_html += "<li>" + n.status + "</li>";
+            if(n.status)
+            {
+                incident_list_item_html += "<li>" + n.status + "</li>";
+            }
             incident_list_item_html += "</ul>";
             incident_list_item_html += "</div>";
         });
@@ -264,13 +273,18 @@ function renderIncidentList(data)
                     site = site.split("www.")[1];
                 }
                 site = site.split("/")[0];
-                incident_list_item_html += "<p>Source: <a href='" + current_visible_incident_list[incident].source_url + "'>" + site +"</a></p>";
+                incident_list_item_html += "<p class='incident_list_item_source'>Source: <a href='" + current_visible_incident_list[incident].source_url + "'>" + site +"</a></p>";
             }
         }
         incident_list_item_html += "</div>";
         incident_list_holder_html += incident_list_item_html;
     }
     $("#incident_list_items").html(incident_list_holder_html);
+    
+    var counter_first = (1 + (items_per_list * (current_incident_list_page - 1)));
+    var counter_last = ((counter_first - 1) + current_visible_incident_list.length);
+    var current_counter_html = "<p>(showing " + counter_first + " - " + counter_last + " of " + incidents_for_current_month_and_year.length + ")</p>";
+    $("#incident_list_counter").html(current_counter_html);
 }
 
 function renderMap(json, violence_data)
