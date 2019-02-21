@@ -97,6 +97,9 @@ $(document).ready(function()
                     }
                 }
             }
+            $("#loading_screen").hide();
+            $("#my_app").show();
+            
             renderMap(json, data);
             renderTimeline(timeline_data_set, data);
             renderIncidentLocations(data);
