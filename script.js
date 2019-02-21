@@ -1,7 +1,7 @@
 "use script";
 var svg;
 var svg_width = 850;
-var svg_height = 730;
+var svg_height = 760;
 var projection = d3.geoAlbersUsa()
     .translate([450, 260]) //---translate to center of svg
     .scale([1000]); //---scale things down so see entire US
@@ -28,8 +28,6 @@ $(document).ready(function()
             .append("svg")
             .attr("width", svg_width)
             .attr("height", svg_height);
-        //renderMap(json);
-        
         incident_list_holder = d3.select("#app")
             .append("div")
             .attr("id", "incident_list_holder");
@@ -107,7 +105,7 @@ $(document).ready(function()
             var incident_list_holder_top = "";
             incident_list_holder_top += "<p>Page ";
             incident_list_holder_top += "<input id='current_incident_list_page_input' type='number' name='quantity' value=" + current_incident_list_page + ">";
-            incident_list_holder_top += " of <span id='ff'>" + current_incident_max_page + "</span></p>";
+            incident_list_holder_top += " of <span id='current_incident_max_page'>" + current_incident_max_page + "</span></p>";
             
             $("#incident_list_holder_top").html(incident_list_holder_top);
             $("#current_incident_list_page_input").on("change", function()
@@ -152,9 +150,9 @@ function renderIncidentList(data)
     {
         return ((i < (items_per_list * current_incident_list_page)) && (i >= (items_per_list * (current_incident_list_page - 1))));
     });
-    
+
     current_incident_max_page = Math.ceil(incidents_for_current_month_and_year.length/items_per_list);
-    
+
     var incident_list_holder_html = "";
     for(var incident = 0; incident < current_visible_incident_list.length; incident++)
     {
@@ -199,7 +197,7 @@ function renderIncidentList(data)
         {
             generate_list_item(n[0], n[1]);
         });
-        
+
         var incident_list_item_html = "";
         var date_split = current_visible_incident_list[incident].date.split("-");
         var date_ = monthNames[(Number(date_split[1]) - 1)] + " " + date_split[2] + ", " + date_split[0];
@@ -344,7 +342,7 @@ function renderMap(json, violence_data)
             current_incident_list_page = 1;
             $("#current_incident_list_page_input").val(1);
             renderIncidentList(violence_data);
-            $("#ff").html(current_incident_max_page);
+            $("#current_incident_max_page").html(current_incident_max_page);
         });
 }
 
@@ -387,7 +385,7 @@ function renderTimeline(time_data, violence_data)
     var timeline_width = 650;
     var timeline_height = 130;
     var timeline_xpos = ((svg_width/2) - (timeline_width/2));
-    var timeline_ypos = (svg_height - timeline_height - 65);
+    var timeline_ypos = (svg_height - timeline_height - 95);
     var timeline_section_width = (timeline_width/(12 * total_years));
 
     var default_color_a = "#fff";
@@ -429,7 +427,7 @@ function renderTimeline(time_data, violence_data)
     {
         return n;
     });
-    
+
     var yscale = d3.scaleLinear()
         .domain([0, 6000])
         .range([timeline_height, 0]);
@@ -510,7 +508,7 @@ function renderTimeline(time_data, violence_data)
             $("#current_incident_list_page_input").val(1);
             renderIncidentLocations(violence_data);
             renderIncidentList(violence_data);
-            $("#ff").html(current_incident_max_page);
+            $("#current_incident_max_page").html(current_incident_max_page);
         });
 
     for(var l = 0; l < 6; l++)
@@ -596,4 +594,66 @@ function renderTimeline(time_data, violence_data)
     renderLineFuction("total_incidents", "black", 1.5);
     renderLineFuction("total_killed", "#ff0000", 1);
     renderLineFuction("total_injured", "#ffa500", 1);
+
+    var legend_xpos = (timeline_xpos + (timeline_width/2));
+    var legend_ypos = (svg_height - 40);
+    var legend = svg.append("g")
+        .attr("id", "legend");
+    var text_a = legend.append("text")
+        .attr("id", "legend_text_a")
+        .style("font-size", "12px")
+        .text("[ ")
+        .style("font-weight", "500")
+        .append("tspan")
+        .text("-")
+        .style("font-weight", "800")
+        .style("fill", "black")
+        .append("tspan")
+        .text(" ] Total Crimes")
+        .style("font-weight", "500")
+        .style("fill", "black");
+    var text_b = legend.append("text")
+        .attr("id", "legend_text_b")
+        .style("font-size", "12px")
+        .text("[ ")
+        .style("font-weight", "500")
+        .append("tspan")
+        .text("-")
+        .style("font-weight", "800")
+        .style("fill", "#ffa500")
+        .append("tspan")
+        .text(" ] Total Injuries")
+        .style("font-weight", "500")
+        .style("fill", "black");
+    var text_c = legend.append("text")
+        .attr("id", "legend_text_c")
+        .style("font-size", "12px")
+        .text("[ ")
+        .style("font-weight", "500")
+        .append("tspan")
+        .text("-")
+        .style("font-weight", "800")
+        .style("fill", "#ff0000")
+        .append("tspan")
+        .text(" ] Total Fatalities")
+        .style("font-weight", "500")
+        .style("fill", "black");
+
+    var legend_padding = 20;
+    var legend_width = ((legend_padding * 2) + d3.select("#legend_text_a").node().getComputedTextLength() + d3.select("#legend_text_b").node().getComputedTextLength() + d3.select("#legend_text_c").node().getComputedTextLength());
+    d3.select("#legend_text_a")
+        .attr("x", (legend_xpos - (legend_width/2)))
+        .attr("y",legend_ypos);
+    d3.select("#legend_text_b")
+        .attr("x", function()
+        {
+            return (Number(d3.select("#legend_text_a").attr("x")) + d3.select("#legend_text_a").node().getComputedTextLength() + legend_padding);
+        })
+        .attr("y",legend_ypos);
+    d3.select("#legend_text_c")
+        .attr("x", function()
+        {
+            return (Number(d3.select("#legend_text_b").attr("x")) + d3.select("#legend_text_b").node().getComputedTextLength() + legend_padding);
+        })
+        .attr("y",legend_ypos);
 }
