@@ -17,11 +17,14 @@ var current_month = 1;
 var current_year = 2014;
 var current_incident_list_page = 1;
 var current_incident_max_page = 0;
-var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" ]
+var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
+
+var loading_screen_rotation_interval_ref;
 
 $(document).ready(function()
 {
     console.log("yerrr world");
+    rotateLoadingIcon();
     d3.json("us-states.json").then(function(json)
     {
         svg = d3.select("#app")
@@ -97,6 +100,7 @@ $(document).ready(function()
                     }
                 }
             }
+            clearInterval(loading_screen_rotation_interval_ref);
             $("#loading_screen").hide();
             $("#my_app").show();
             
@@ -131,6 +135,16 @@ $(document).ready(function()
     });
 });
 
+function rotateLoadingIcon()
+{
+    var current_rotation = 0;
+    loading_screen_rotation_interval_ref = setInterval(function()
+    {
+        current_rotation += 45;
+        $("#loading_screen_icon").css({ WebkitTransform: 'rotate(' + current_rotation + 'deg)'});
+        $("#loading_screen_icon").css({ '-moz-transform': 'rotate(' + current_rotation + 'deg)'});
+    },300);
+}
 function renderIncidentList(data)
 {
     var items_per_list = 500;

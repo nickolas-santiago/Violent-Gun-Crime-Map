@@ -5,23 +5,6 @@ body
     text-align: center;
     background-color: #e3e3e3;
 }
-#loading_screen
-{
-    width: 100%;
-    height: 100vh;
-    background-color: #0c0c0c;
-}
-#loading_screen_text
-{
-    width: 100%;
-    margin: 0;
-    height: 100%;
-    display: grid;
-    align-items: center;
-    font-size: 40px;
-    font-weight: 800;
-    color: #e3e3e3;
-}
 #my_app
 {
     display: none;
@@ -34,6 +17,33 @@ body
 #app
 {
     display: inline-flex;
+}
+
+/*Style for Loading Screen*/
+#loading_screen
+{
+    height: 100vh;
+    background-color: #0c0c0c;
+}
+#loading_screen_wrapper
+{
+    height: 100%;
+    display: flex;
+    font-weight: 800;
+    color: #e3e3e3;
+}
+#loading_screen_content
+{
+    margin: auto auto;
+}
+#loading_screen_text
+{
+    margin: 20px 0;
+    font-size: 30px;
+}
+#loading_screen_icon
+{
+    font-size: 30px;
 }
 
 /*Style for SVG*/
