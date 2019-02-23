@@ -17,6 +17,7 @@ var current_month = 1;
 var current_year = 2014;
 var current_incident_list_page = 1;
 var current_incident_max_page = 0;
+var current_chosen_incident = "";
 var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
 
 var loading_screen_rotation_interval_ref;
@@ -130,6 +131,11 @@ $(document).ready(function()
                 {
                     $(this).val(current_incident_max_page);
                 }
+                d3.select("#incident_" + current_chosen_incident)
+                    .attr("r", 2.5)
+                    .style("stroke", "none");
+                current_chosen_incident = "";
+                document.getElementById('incident_list_items').scrollTop = 0;
             });
         });
     });
@@ -145,6 +151,7 @@ function rotateLoadingIcon()
         $("#loading_screen_icon").css({ '-moz-transform': 'rotate(' + current_rotation + 'deg)'});
     },300);
 }
+
 function renderIncidentList(data)
 {
     var items_per_list = 500;
@@ -296,6 +303,43 @@ function renderIncidentList(data)
     }
     $("#incident_list_items").html(incident_list_holder_html);
     
+    $(".incident_list_item").on("click", function()
+    {
+        var new_current_chosen_incident = incidents_for_current_month_and_year[$(this).index() + (items_per_list * (current_incident_list_page - 1))].incident_id;
+        if(current_chosen_incident != new_current_chosen_incident)
+        {
+            if(current_chosen_incident != "")
+            {
+                d3.select("#incident_" + current_chosen_incident)
+                    .attr("r", 2.5)
+                    .style("stroke", "none");
+            }
+            var cx = d3.select("#incident_" + new_current_chosen_incident).attr("cx");
+            var cy = d3.select("#incident_" + new_current_chosen_incident).attr("cy");
+            d3.select("#incident_" + new_current_chosen_incident).remove();
+            svg.append("circle")
+                .attr("class", "incident_point")
+                .attr("id", "incident_" + new_current_chosen_incident)
+                .attr("state", incidents_for_current_month_and_year[$(this).index() + (items_per_list * (current_incident_list_page - 1))].state)
+                .attr("cx", cx)
+                .attr("cy", cy)
+                .attr("r", 5)
+                .style("fill", "red")
+                .style("stroke", "black")
+                .style("stroke-width", 2.5);
+            current_chosen_incident = new_current_chosen_incident;
+            console.log(d3.select("#incident_" + current_chosen_incident));
+        }
+        else
+        {
+            d3.select("#incident_" + current_chosen_incident)
+                .attr("r", 2.5)
+                .style("stroke", "none");
+            current_chosen_incident = "";
+        }
+        
+    });
+    
     var counter_first = (1 + (items_per_list * (current_incident_list_page - 1)));
     var counter_last = ((counter_first - 1) + current_visible_incident_list.length);
     var current_counter_html = "<p>(showing " + counter_first + " - " + counter_last + " of " + incidents_for_current_month_and_year.length + ")</p>";
@@ -360,6 +404,18 @@ function renderMap(json, violence_data)
             $("#current_incident_list_page_input").val(1);
             renderIncidentList(violence_data);
             $("#current_incident_max_page").html(current_incident_max_page);
+            
+            if(current_chosen_incident != "")
+            {
+                if(d3.select("#incident_" + current_chosen_incident).attr("state") != d.properties.name)
+                {
+                    d3.select("#incident_" + current_chosen_incident)
+                        .attr("r", 2.5)
+                        .style("stroke", "none");
+                    current_chosen_incident = "";
+                }
+            }
+            document.getElementById('incident_list_items').scrollTop = 0;
         });
 }
 
@@ -383,7 +439,11 @@ function renderIncidentLocations(violence_data)
         .attr("class", "incident_point")
         .attr("id", function(d)
         {
-            return d.incident_id;
+            return "incident_" + d.incident_id;
+        })
+        .attr("state", function(d)
+        {
+            return d.state;
         })
         .attr("cx", function(d)
         {
@@ -526,6 +586,8 @@ function renderTimeline(time_data, violence_data)
             renderIncidentLocations(violence_data);
             renderIncidentList(violence_data);
             $("#current_incident_max_page").html(current_incident_max_page);
+            current_chosen_incident = "";
+            document.getElementById('incident_list_items').scrollTop = 0;
         });
 
     for(var l = 0; l < 6; l++)
