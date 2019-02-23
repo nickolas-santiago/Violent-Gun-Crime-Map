@@ -108,6 +108,10 @@ svg
     margin: 5px 0 15px 0;
     box-shadow: 5px 10px 8px #575757;
 }
+.incident_list_item_selected
+{
+    border: solid 4px black;
+}
 .incident_list_item_info
 {
     margin: 4px 0;

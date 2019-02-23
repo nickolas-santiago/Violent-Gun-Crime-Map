@@ -225,7 +225,7 @@ function renderIncidentList(data)
         var incident_list_item_html = "";
         var date_split = current_visible_incident_list[incident].date.split("-");
         var date_ = monthNames[(Number(date_split[1]) - 1)] + " " + date_split[2] + ", " + date_split[0];
-        incident_list_item_html += "<div class='incident_list_item'>";
+        incident_list_item_html += "<div class='incident_list_item' id='incident_list_item_" + current_visible_incident_list[incident].incident_id + "'>";
         incident_list_item_html += "<p class='incident_list_item_info'>" + date_ + "</p>";
         incident_list_item_html += "<p class='incident_list_item_info'>" + current_visible_incident_list[incident].city_or_county + ", " + current_visible_incident_list[incident].state + "</p>";
         if(current_visible_incident_list[incident].incident_characteristics)
@@ -313,6 +313,7 @@ function renderIncidentList(data)
                 d3.select("#incident_" + current_chosen_incident)
                     .attr("r", 2.5)
                     .style("stroke", "none");
+                $("#incident_list_item_" + current_chosen_incident).toggleClass("incident_list_item_selected");
             }
             var cx = d3.select("#incident_" + new_current_chosen_incident).attr("cx");
             var cy = d3.select("#incident_" + new_current_chosen_incident).attr("cy");
@@ -328,7 +329,7 @@ function renderIncidentList(data)
                 .style("stroke", "black")
                 .style("stroke-width", 2.5);
             current_chosen_incident = new_current_chosen_incident;
-            console.log(d3.select("#incident_" + current_chosen_incident));
+            $(this).toggleClass("incident_list_item_selected");
         }
         else
         {
@@ -336,6 +337,7 @@ function renderIncidentList(data)
                 .attr("r", 2.5)
                 .style("stroke", "none");
             current_chosen_incident = "";
+            $(this).toggleClass("incident_list_item_selected");
         }
         
     });
