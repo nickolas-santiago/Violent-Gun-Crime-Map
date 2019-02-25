@@ -105,17 +105,22 @@ $(document).ready(function()
             $("#loading_screen").hide();
             $("#my_app").show();
             
+            var incident_list_holder_top = "";
+            incident_list_holder_top += "<p>Page ";
+            incident_list_holder_top += "<input id='current_incident_list_page_input' type='number' name='quantity' value=" + current_incident_list_page + ">";
+            incident_list_holder_top += " of <span id='current_incident_max_page'>" + current_incident_max_page + "</span></p>";
+            incident_list_holder_top += "<select id='current_incident_list_type_selector'>";
+            incident_list_holder_top += "<option value='chronological_order'>Chronological Order</option>";
+            incident_list_holder_top += "<option value='most_injuries'>Most Injuries</option>";
+            incident_list_holder_top += "<option value='most_fatalities'>Most Fatalities</option>";
+            incident_list_holder_top += "</select>";
+            $("#incident_list_holder_top").html(incident_list_holder_top);
+            
             renderMap(json, data);
             renderTimeline(timeline_data_set, data);
             renderIncidentLocations(data);
             renderIncidentList(data);
             
-            var incident_list_holder_top = "";
-            incident_list_holder_top += "<p>Page ";
-            incident_list_holder_top += "<input id='current_incident_list_page_input' type='number' name='quantity' value=" + current_incident_list_page + ">";
-            incident_list_holder_top += " of <span id='current_incident_max_page'>" + current_incident_max_page + "</span></p>";
-            
-            $("#incident_list_holder_top").html(incident_list_holder_top);
             $("#current_incident_list_page_input").on("change", function()
             {
                 if($(this).val() > 0 && $(this).val() <= current_incident_max_page)
@@ -131,6 +136,19 @@ $(document).ready(function()
                 {
                     $(this).val(current_incident_max_page);
                 }
+                d3.select("#incident_" + current_chosen_incident)
+                    .attr("r", 2.5)
+                    .style("stroke", "none");
+                current_chosen_incident = "";
+                document.getElementById('incident_list_items').scrollTop = 0;
+            });
+            
+            $("#current_incident_list_type_selector").on("change", function()
+            {
+                current_incident_list_page = 1;
+                $("#current_incident_list_page_input").val(1);
+                renderIncidentList(data);
+                $("#current_incident_max_page").html(current_incident_max_page);
                 d3.select("#incident_" + current_chosen_incident)
                     .attr("r", 2.5)
                     .style("stroke", "none");
@@ -170,11 +188,25 @@ function renderIncidentList(data)
         }
         return ((date_[0] == current_year) && (date_[1] == current_month) && (projection_ == false));
     });
+    if($("#current_incident_list_type_selector").val() == "most_injuries")
+    {
+        incidents_for_current_month_and_year = incidents_for_current_month_and_year.sort(function(a, b)
+        {
+            return b.n_injured - a.n_injured;
+        });
+    }
+    if($("#current_incident_list_type_selector").val() == "most_fatalities")
+    {
+        incidents_for_current_month_and_year = incidents_for_current_month_and_year.sort(function(a, b)
+        {
+            return b.n_killed - a.n_killed;
+        });
+    }
+    
     var current_visible_incident_list = incidents_for_current_month_and_year.filter(function(n, i)
     {
         return ((i < (items_per_list * current_incident_list_page)) && (i >= (items_per_list * (current_incident_list_page - 1))));
     });
-
     current_incident_max_page = Math.ceil(incidents_for_current_month_and_year.length/items_per_list);
 
     var incident_list_holder_html = "";

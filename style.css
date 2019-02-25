@@ -92,6 +92,11 @@ svg
     width: 3em;
     border: solid 2px rgba(87, 87, 87, 0.2);
 }
+#current_incident_list_type_selector
+{
+    margin-bottom: 10px;
+    border: solid 2px rgba(87, 87, 87, 0.2);
+}
 #incident_list_items
 {
     padding: 0 10px;
@@ -107,6 +112,8 @@ svg
     background-color: white;
     margin: 5px 0 15px 0;
     box-shadow: 5px 10px 8px #575757;
+    cursor: pointer;
+    font-size: 13.5px;
 }
 .incident_list_item_selected
 {
