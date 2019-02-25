@@ -105,6 +105,11 @@ $(document).ready(function()
             $("#loading_screen").hide();
             $("#my_app").show();
             
+            renderMap(json, data);
+            renderTimeline(timeline_data_set, data);
+            renderIncidentLocations(data);
+            renderIncidentList(data);
+            
             var incident_list_holder_top = "";
             incident_list_holder_top += "<p>Page ";
             incident_list_holder_top += "<input id='current_incident_list_page_input' type='number' name='quantity' value=" + current_incident_list_page + ">";
@@ -115,11 +120,6 @@ $(document).ready(function()
             incident_list_holder_top += "<option value='most_fatalities'>Most Fatalities</option>";
             incident_list_holder_top += "</select>";
             $("#incident_list_holder_top").html(incident_list_holder_top);
-            
-            renderMap(json, data);
-            renderTimeline(timeline_data_set, data);
-            renderIncidentLocations(data);
-            renderIncidentList(data);
             
             $("#current_incident_list_page_input").on("change", function()
             {
@@ -136,10 +136,13 @@ $(document).ready(function()
                 {
                     $(this).val(current_incident_max_page);
                 }
-                d3.select("#incident_" + current_chosen_incident)
-                    .attr("r", 2.5)
-                    .style("stroke", "none");
-                current_chosen_incident = "";
+                if(current_chosen_incident != "")
+                {
+                    d3.select("#incident_" + current_chosen_incident)
+                        .attr("r", 2.5)
+                        .style("stroke", "none");
+                    current_chosen_incident = "";
+                }
                 document.getElementById('incident_list_items').scrollTop = 0;
             });
             
@@ -148,12 +151,21 @@ $(document).ready(function()
                 current_incident_list_page = 1;
                 $("#current_incident_list_page_input").val(1);
                 renderIncidentList(data);
-                $("#current_incident_max_page").html(current_incident_max_page);
-                d3.select("#incident_" + current_chosen_incident)
-                    .attr("r", 2.5)
-                    .style("stroke", "none");
-                current_chosen_incident = "";
                 document.getElementById('incident_list_items').scrollTop = 0;
+                if(current_chosen_incident != "")
+                {
+                    if($("#incident_list_items").find("#incident_list_item_" + current_chosen_incident).length == 0)
+                    {
+                        d3.select("#incident_" + current_chosen_incident)
+                            .attr("r", 2.5)
+                            .style("stroke", "none");
+                        current_chosen_incident = "";
+                    }
+                    else
+                    {
+                        $("#incident_list_item_" + current_chosen_incident).toggleClass("incident_list_item_selected");
+                    }
+                }
             });
         });
     });
@@ -327,7 +339,7 @@ function renderIncidentList(data)
                     site = site.split("www.")[1];
                 }
                 site = site.split("/")[0];
-                incident_list_item_html += "<p class='incident_list_item_source'>Source: <a href='" + current_visible_incident_list[incident].source_url + "'>" + site +"</a></p>";
+                incident_list_item_html += "<p class='incident_list_item_source'>Source: <a class='incident_list_item_source_link' href='" + current_visible_incident_list[incident].source_url + "' target='_blank'>" + site +"</a></p>";
             }
         }
         incident_list_item_html += "</div>";
@@ -335,7 +347,7 @@ function renderIncidentList(data)
     }
     $("#incident_list_items").html(incident_list_holder_html);
     
-    $(".incident_list_item").on("click", function()
+    $(".incident_list_item").on("click", function(e)
     {
         var new_current_chosen_incident = incidents_for_current_month_and_year[$(this).index() + (items_per_list * (current_incident_list_page - 1))].incident_id;
         if(current_chosen_incident != new_current_chosen_incident)
@@ -365,13 +377,15 @@ function renderIncidentList(data)
         }
         else
         {
-            d3.select("#incident_" + current_chosen_incident)
-                .attr("r", 2.5)
-                .style("stroke", "none");
-            current_chosen_incident = "";
-            $(this).toggleClass("incident_list_item_selected");
+            if(e.target.className != "incident_list_item_source_link")
+            {
+                d3.select("#incident_" + current_chosen_incident)
+                    .attr("r", 2.5)
+                    .style("stroke", "none");
+                current_chosen_incident = "";
+                $(this).toggleClass("incident_list_item_selected");
+            }
         }
-        
     });
     
     var counter_first = (1 + (items_per_list * (current_incident_list_page - 1)));
@@ -447,6 +461,20 @@ function renderMap(json, violence_data)
                         .attr("r", 2.5)
                         .style("stroke", "none");
                     current_chosen_incident = "";
+                }
+                else
+                {
+                    if($("#incident_list_items").find("#incident_list_item_" + current_chosen_incident).length == 0)
+                    {
+                        d3.select("#incident_" + current_chosen_incident)
+                            .attr("r", 2.5)
+                            .style("stroke", "none");
+                        current_chosen_incident = "";
+                    }
+                    else
+                    {
+                        $("#incident_list_item_" + current_chosen_incident).toggleClass("incident_list_item_selected");
+                    }
                 }
             }
             document.getElementById('incident_list_items').scrollTop = 0;
