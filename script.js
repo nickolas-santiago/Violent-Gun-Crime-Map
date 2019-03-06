@@ -1,10 +1,10 @@
 "use script";
 var svg;
 var svg_width = 850;
-var svg_height = 760;
+var svg_height = 740;
 var projection = d3.geoAlbersUsa()
-    .translate([450, 260]) //---translate to center of svg
-    .scale([1000]); //---scale things down so see entire US
+    .translate([450, 235]) //---center of the map
+    .scale([950]); //---scale things down so see entire US
 var path = d3.geoPath() // path generator that will convert GeoJSON to SVG paths
     .projection(projection); // tell path generator to use albersUsa projection
 var incident_list_holder;
@@ -730,71 +730,71 @@ function renderTimeline(time_data, violence_data)
             .attr("transform","translate(" + (timeline_xpos + (timeline_section_width/2)) + "," +  timeline_ypos +")")
             .style("fill","none")
             .style("stroke", line_color)
-            .style("stroke-width", line_width);
+            .style("stroke-width", 1.3);
     }
     renderLineFuction("total_incidents", "black", 1.5);
-    renderLineFuction("total_killed", "#ff0000", 1);
-    renderLineFuction("total_injured", "#ffa500", 1);
+    renderLineFuction("total_killed", "#ff0000", 1.5);
+    renderLineFuction("total_injured", "#ffa500", 1.5);
 
     var legend_xpos = (timeline_xpos + (timeline_width/2));
     var legend_ypos = (svg_height - 40);
+    var legend_lines_ypos = (svg_height - 30);
     var legend = svg.append("g")
         .attr("id", "legend");
     var text_a = legend.append("text")
         .attr("id", "legend_text_a")
         .style("font-size", "12px")
-        .text("[ ")
-        .style("font-weight", "500")
-        .append("tspan")
-        .text("-")
-        .style("font-weight", "800")
-        .style("fill", "black")
-        .append("tspan")
-        .text(" ] Total Crimes")
+        .text("Total Crimes")
         .style("font-weight", "500")
         .style("fill", "black");
     var text_b = legend.append("text")
         .attr("id", "legend_text_b")
         .style("font-size", "12px")
-        .text("[ ")
-        .style("font-weight", "500")
-        .append("tspan")
-        .text("-")
-        .style("font-weight", "800")
-        .style("fill", "#ffa500")
-        .append("tspan")
-        .text(" ] Total Injuries")
+        .text("Total Injuries")
         .style("font-weight", "500")
         .style("fill", "black");
     var text_c = legend.append("text")
         .attr("id", "legend_text_c")
         .style("font-size", "12px")
-        .text("[ ")
-        .style("font-weight", "500")
-        .append("tspan")
-        .text("-")
-        .style("font-weight", "800")
-        .style("fill", "#ff0000")
-        .append("tspan")
-        .text(" ] Total Fatalities")
+        .text("Total Fatalities")
         .style("font-weight", "500")
         .style("fill", "black");
-
-    var legend_padding = 20;
+    var legend_padding = 35;
     var legend_width = ((legend_padding * 2) + d3.select("#legend_text_a").node().getComputedTextLength() + d3.select("#legend_text_b").node().getComputedTextLength() + d3.select("#legend_text_c").node().getComputedTextLength());
     d3.select("#legend_text_a")
         .attr("x", (legend_xpos - (legend_width/2)))
         .attr("y",legend_ypos);
+    var line = svg.append("line")
+        .attr("x1", (legend_xpos - (legend_width/2)))
+        .attr("y1", legend_lines_ypos)
+        .attr("x2", (legend_xpos - (legend_width/2)) + d3.select("#legend_text_a").node().getComputedTextLength())
+        .attr("y2", legend_lines_ypos)
+        .attr("stroke-width", 2)
+        .attr("stroke", "black");
     d3.select("#legend_text_b")
         .attr("x", function()
         {
             return (Number(d3.select("#legend_text_a").attr("x")) + d3.select("#legend_text_a").node().getComputedTextLength() + legend_padding);
         })
         .attr("y",legend_ypos);
+    var line = svg.append("line")
+        .attr("x1", Number(d3.select("#legend_text_b").attr("x")))
+        .attr("y1", legend_lines_ypos)
+        .attr("x2", (Number(d3.select("#legend_text_b").attr("x")) + d3.select("#legend_text_b").node().getComputedTextLength()))
+        .attr("y2", legend_lines_ypos)
+        .attr("stroke-width", 2)
+        .attr("stroke", "#ffa500");
     d3.select("#legend_text_c")
         .attr("x", function()
         {
             return (Number(d3.select("#legend_text_b").attr("x")) + d3.select("#legend_text_b").node().getComputedTextLength() + legend_padding);
         })
         .attr("y",legend_ypos);
+    var line = svg.append("line")
+        .attr("x1", Number(d3.select("#legend_text_c").attr("x")))
+        .attr("y1", legend_lines_ypos)
+        .attr("x2", (Number(d3.select("#legend_text_c").attr("x")) + d3.select("#legend_text_c").node().getComputedTextLength()))
+        .attr("y2", legend_lines_ypos)
+        .attr("stroke-width", 2)
+        .attr("stroke", "#ff0000");
 }

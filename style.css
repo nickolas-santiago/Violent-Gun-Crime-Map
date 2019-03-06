@@ -7,12 +7,12 @@ body
 }
 #my_app
 {
-    display: none;
+    display: inline-block;
 }
 #title
 {
-    width: 1270px;
-    margin: 30px auto 20px auto;
+    font-size: 30px;
+    margin: 18px 0 10px 0;
 }
 #app
 {
@@ -68,8 +68,8 @@ svg
 /*Style for Incident List*/
 #incident_list_holder
 {
-    width: 400px;
-    height: 760px;
+    width: 350px;
+    height: 740px;
     margin-left: 10px;
     padding: 0 5px;
     background-color: white;
