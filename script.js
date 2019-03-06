@@ -21,6 +21,7 @@ var current_chosen_incident = "";
 var monthNames = [ "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
 
 var loading_screen_rotation_interval_ref;
+var month_and_year_data = [];
 
 $(document).ready(function()
 {
@@ -108,6 +109,7 @@ $(document).ready(function()
             renderMap(json, data);
             renderTimeline(timeline_data_set, data);
             renderIncidentLocations(data);
+            setDataForMonthAndYear(data);
             renderIncidentList(data);
             
             var incident_list_holder_top = "";
@@ -182,10 +184,9 @@ function rotateLoadingIcon()
     },300);
 }
 
-function renderIncidentList(data)
+function setDataForMonthAndYear(data)
 {
-    var items_per_list = 500;
-    var incidents_for_current_month_and_year = data.filter(function(n)
+    month_and_year_data = data.filter(function(n)
     {
         var date_ = n.date.split("-");
         var projection_;
@@ -200,6 +201,12 @@ function renderIncidentList(data)
         }
         return ((date_[0] == current_year) && (date_[1] == current_month) && (projection_ == false));
     });
+}
+
+function renderIncidentList(data)
+{
+    var items_per_list = 500;
+    var incidents_for_current_month_and_year = [...month_and_year_data];
     if($("#current_incident_list_type_selector").val() == "most_injuries")
     {
         incidents_for_current_month_and_year = incidents_for_current_month_and_year.sort(function(a, b)
@@ -214,7 +221,6 @@ function renderIncidentList(data)
             return b.n_killed - a.n_killed;
         });
     }
-    
     var current_visible_incident_list = incidents_for_current_month_and_year.filter(function(n, i)
     {
         return ((i < (items_per_list * current_incident_list_page)) && (i >= (items_per_list * (current_incident_list_page - 1))));
@@ -450,6 +456,7 @@ function renderMap(json, violence_data)
             }
             current_incident_list_page = 1;
             $("#current_incident_list_page_input").val(1);
+            setDataForMonthAndYear(violence_data);
             renderIncidentList(violence_data);
             $("#current_incident_max_page").html(current_incident_max_page);
             
@@ -646,6 +653,7 @@ function renderTimeline(time_data, violence_data)
             current_incident_list_page = 1;
             $("#current_incident_list_page_input").val(1);
             renderIncidentLocations(violence_data);
+            setDataForMonthAndYear(violence_data);
             renderIncidentList(violence_data);
             $("#current_incident_max_page").html(current_incident_max_page);
             current_chosen_incident = "";
